@@ -28,4 +28,13 @@ public class Route {
 	public double getFitness() {
 		return 1.0/distance;
 	}
+	@Override
+	public String toString() {
+		String result = "";
+		for(City city : cities) {
+			result += city.getName() + "-";
+		}
+		result += cities[0].getName();
+		return result.trim();
+	}
 }

@@ -15,6 +15,9 @@ public class City {
 	public int getY() {
 		return y;
 	}
+	public String getName() {
+		return name;
+	}
 	public double distanceTo(City city) {
 		return Math.sqrt((double)Math.pow(x-city.getX(), 2.0) + (double)Math.pow(y-city.getY(), 2.0));
 	}

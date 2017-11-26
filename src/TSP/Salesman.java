@@ -1,5 +1,8 @@
 package TSP;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -75,8 +78,8 @@ public class Salesman {
 	}
 	public Route[] evolve() {
 		Route[] newRoutes = new Route[routes.length];
-		
-		for(int i = 0; i < routes.length; i++) {
+		newRoutes[0] = getBestRoute();
+		for(int i = 1; i < routes.length; i++) {
 			Route[] parents = selectParents();
 			Route child = createChild(parents[0],parents[1]);
 			newRoutes[i] = mutate(child);
@@ -94,10 +97,25 @@ public class Salesman {
 		}
 		return avg / routes.length;
 	}
+	public double getAverageDistance() {
+		double avg = 0.0;
+		for(Route r : routes) {
+			avg += r.getDistance();
+		}
+		return avg / routes.length;
+	}
 	public Route getBestRoute() {
 		Route result = routes[0];
 		for(Route r : routes) {
 			if(r.getFitness() > result.getFitness())
+				result = r;
+		}
+		return result;
+	}
+	public Route getWorstRoute() {
+		Route result = routes[0];
+		for(Route r : routes) {
+			if(r.getFitness() < result.getFitness())
 				result = r;
 		}
 		return result;
@@ -116,15 +134,49 @@ public class Salesman {
 	public static void main(String[] args) {
 		Random rand = new Random();
 		String[] letters = new String[] {"A","B","C","D","E","F","G","H","I","J","K","L","M"};
-		City[] cities = new City[13];
+		City[] cities = new City[letters.length];
 		for(int i = 0; i < letters.length; i++)
-			cities[i] = new City(letters[i],rand.nextInt(100),rand.nextInt(100));
-		
-		Salesman s = new Salesman(cities);
-		System.out.println(s.getAverageFitness());
-		for(int i = 0; i < 100; i++) {
-			s.evolve();
-			System.out.println(s.getAverageFitness());
+			cities[i] = new City(letters[i],rand.nextInt(100000),rand.nextInt(100000));
+		try {
+			File outFile = new File ("Cities.csv"); 
+			FileWriter fWriter = new FileWriter (outFile); 
+			PrintWriter pWriter = new PrintWriter (fWriter);
+			
+			pWriter.println("Name,X,Y");
+			for(City c : cities) {
+				pWriter.println(c.getName()+","+c.getX()+","+c.getY());
+			}
+			
+			fWriter.close();
+			pWriter.close();
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
+		
+		
+		try {
+			File outFile = new File ("Results.csv"); 
+			FileWriter fWriter = new FileWriter (outFile); 
+			PrintWriter pWriter = new PrintWriter (fWriter);
+			
+			pWriter.println("Trial,Average Fitness,Average Distance,Best Fitness,Best Distance,Best Route,Worst Fitness,Worst Distance,Worst Route");
+			Salesman s = new Salesman(cities);
+			System.out.println(s.getAverageFitness());
+			pWriter.println(1+","+s.getAverageFitness()+","+s.getAverageDistance()+","+s.getBestRoute().getFitness()+","+s.getBestRoute().getDistance()+","+s.getBestRoute()+","+s.getWorstRoute().getFitness()+","+s.getWorstRoute().getDistance()+","+s.getWorstRoute());
+			
+			for(int i = 0; i < 1000000; i++) {
+				s.evolve();
+				if(i < 10 || i % 1000 == 0) {
+					System.out.println(i+" "+s.getBestRoute().getDistance());
+					pWriter.println((i+1)+","+s.getAverageFitness()+","+s.getAverageDistance()+","+s.getBestRoute().getFitness()+","+s.getBestRoute().getDistance()+","+s.getBestRoute()+","+s.getWorstRoute().getFitness()+","+s.getWorstRoute().getDistance()+","+s.getWorstRoute());
+				}
+			}
+			
+			fWriter.close();
+			pWriter.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 }
