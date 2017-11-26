@@ -26,7 +26,7 @@ public class Route {
 		return distance;
 	}
 	public double getFitness() {
-		return 1.0/distance;
+		return 1.0/distance * 100.0;
 	}
 	@Override
 	public String toString() {
