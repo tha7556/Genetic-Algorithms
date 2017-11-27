@@ -11,8 +11,8 @@ import java.util.Random;
 
 public class Salesman {
 	private City[] cities;
-	private final int POPULATION_SIZE = 100;
-	private final double MUTATION_RATE = 0.4;
+	private final int POPULATION_SIZE = 200;
+	private final double MUTATION_RATE = 0.01;
 	private Route[] routes;
 	
 	public Salesman(City[] cities) {
@@ -69,9 +69,10 @@ public class Salesman {
 		Random rand = new Random();
 		int start = (int) (rand.nextDouble() * cities.length);
 		int end = (int) (rand.nextDouble() * cities.length);
-		while(end < start)
+		while(end <= start) {
 			end = (int) (rand.nextDouble() * cities.length);
-		
+			start = (int) (rand.nextDouble() * cities.length);
+		}
 		for(int i = 0; i < cities.length; i++) {
 			if(i > start && i < end) {
 				arr[i] = parent1.getCities()[i];
@@ -105,7 +106,7 @@ public class Salesman {
 	}
 	public Route[] evolve() {
 		Route[] newRoutes = new Route[routes.length];
-		newRoutes[0] = getBestRoute();
+		newRoutes[0] = (getBestRoute());
 		for(int i = 1; i < routes.length; i++) {
 			Route[] parents = selectParents();
 			Route child = createChild(parents[0],parents[1]);
@@ -134,7 +135,7 @@ public class Salesman {
 	public Route getBestRoute() {
 		Route result = routes[0];
 		for(Route r : routes) {
-			if(r.getFitness() > result.getFitness())
+			if(r.getDistance() < result.getDistance())
 				result = r;
 		}
 		return result;
@@ -160,12 +161,13 @@ public class Salesman {
 	}	
 	public static void main(String[] args) {
 		Random rand = new Random();
-		String[] letters = new String[] {"A","B","C","D","E","F","G","H","I","J","K","L","M"};
-		int[] xVals = new int[]{93965,2179,28973,31868,36845,9183,85749,32055,4878,84923,54305,1122,69821};
-		int[] yVals = new int[] {42802,93148,47246,70632,93184,29568,17420,53356,3617,937,10710,32760,75014};
+		Salesman s = null;
+		String[] letters = new String[] {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T"};
+		int[] xVals = new int[]{60,20,40,60,20,20,60,100,160,200,180,120,140,180,200,180,140,100,100,80};
+		int[] yVals = new int[]{200,160,120,80,40,20,20,40,20,40,60,80,140,100,160,200,180,120,160,180};
 		City[] cities = new City[letters.length];
-		for(int i = 0; i < letters.length; i++)
-			//cities[i] = new City(letters[i],rand.nextInt(100000),rand.nextInt(100000));
+		for(int i = 0; i < xVals.length; i++)
+			//cities[i] = new City(letters[i],rand.nextInt(200),rand.nextInt(200));
 			cities[i] = new City(letters[i],xVals[i],yVals[i]);
 		try {
 			File outFile = new File ("Cities.csv"); 
@@ -190,18 +192,47 @@ public class Salesman {
 			PrintWriter pWriter = new PrintWriter (fWriter);
 			
 			pWriter.println("Trial,Average Fitness,Average Distance,Best Fitness,Best Distance,Best Route,Worst Fitness,Worst Distance,Worst Route");
-			Salesman s = new Salesman(cities);
+			s = new Salesman(cities);
+			
+			File outFile2 = new File ("InitialRoute.csv"); 
+			FileWriter fWriter2 = new FileWriter (outFile2); 
+			PrintWriter pWriter2 = new PrintWriter (fWriter2);
+			
+			for(City c : s.getBestRoute().getCities()) {
+				pWriter2.println(c.getName()+","+c.getX()+","+c.getY());
+			}
+			pWriter2.println(s.getBestRoute().getCities()[0].getName()+","+s.getBestRoute().getCities()[0].getX()+","+s.getBestRoute().getCities()[0].getY());
+			fWriter2.close();
+			pWriter2.close();
+			
 			System.out.println(s.getAverageFitness());
 			pWriter.println(1+","+s.getAverageFitness()+","+s.getAverageDistance()+","+s.getBestRoute().getFitness()+","+s.getBestRoute().getDistance()+","+s.getBestRoute()+","+s.getWorstRoute().getFitness()+","+s.getWorstRoute().getDistance()+","+s.getWorstRoute());
-			
-			for(int i = 0; i < 1500000; i++) {
+			int i = 0;
+			double target = .00116;
+			while(s.getBestRoute().getFitness() < target) {
 				s.evolve();
-				if(i < 10 || i % 500 == 0) {
+				if(i < 10 || i % 5 == 0 || s.getBestRoute().getFitness() >= target) {
 					System.out.println(s.getBestRoute().getFitness()+"     "+s.getBestRoute()+"  "+i);
 					pWriter.println((i+1)+","+s.getAverageFitness()+","+s.getAverageDistance()+","+s.getBestRoute().getFitness()+","+s.getBestRoute().getDistance()+","+s.getBestRoute()+","+s.getWorstRoute().getFitness()+","+s.getWorstRoute().getDistance()+","+s.getWorstRoute());
 				}
+				i++;
 			}
 			
+			fWriter.close();
+			pWriter.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			File outFile = new File ("BestRoute.csv"); 
+			FileWriter fWriter = new FileWriter (outFile); 
+			PrintWriter pWriter = new PrintWriter (fWriter);
+			
+			for(City c : s.getBestRoute().getCities()) {
+				pWriter.println(c.getName()+","+c.getX()+","+c.getY());
+			}
+			pWriter.println(s.getBestRoute().getCities()[0].getName()+","+s.getBestRoute().getCities()[0].getX()+","+s.getBestRoute().getCities()[0].getY());
 			fWriter.close();
 			pWriter.close();
 		} catch(Exception e) {
