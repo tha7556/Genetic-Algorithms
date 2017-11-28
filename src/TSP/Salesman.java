@@ -12,12 +12,16 @@ import java.util.Random;
 public class Salesman {
 	private City[] cities;
 	private final int POPULATION_SIZE = 200;
+	public static final int MAX_WIDTH = 200 , MAX_HEIGHT = 200;
 	private final double MUTATION_RATE = 0.01;
 	private Route[] routes;
+	private Window window;
 	
 	public Salesman(City[] cities) {
 		this.cities = cities;
 		routes = generateInitialRoutes();
+		window = new Window(400, 400, cities);
+		window.updateRoute(getBestRoute().getCities());
 	}
 	public Route[] generateInitialRoutes() {
 		routes = new Route[POPULATION_SIZE];
@@ -113,6 +117,7 @@ public class Salesman {
 			newRoutes[i] = mutate(child);
 		}
 		routes = newRoutes;
+		window.updateRoute(getBestRoute().getCities());
 		return routes;
 	}
 	public City[] getCities() {
@@ -165,7 +170,7 @@ public class Salesman {
 		String[] letters = new String[] {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T"};
 		int[] xVals = new int[]{60,20,40,60,20,20,60,100,160,200,180,120,140,180,200,180,140,100,100,80};
 		int[] yVals = new int[]{200,160,120,80,40,20,20,40,20,40,60,80,140,100,160,200,180,120,160,180};
-		City[] cities = new City[letters.length];
+		City[] cities = new City[xVals.length];
 		for(int i = 0; i < xVals.length; i++)
 			//cities[i] = new City(letters[i],rand.nextInt(200),rand.nextInt(200));
 			cities[i] = new City(letters[i],xVals[i],yVals[i]);
